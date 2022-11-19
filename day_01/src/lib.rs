@@ -43,6 +43,24 @@ pub fn run(contents:String ) -> Result<(),Box<dyn Error>> {
     Ok(())
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part_one() {
+        assert_eq!(get_final_floor("(())"),0);
+        assert_eq!(get_final_floor("))((((("),3);
+    }
+
+    #[test]
+    fn test_part_two() {
+        assert_eq!(get_first_basement("()())"),Some(5));
+        assert_eq!(get_first_basement(")"),Some(1));
+    }
+}
+
+
 
 
 
