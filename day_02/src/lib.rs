@@ -17,8 +17,7 @@ impl RectangleBox {
         let width = dimensions.next().unwrap().parse().unwrap();
         let height = dimensions.next().unwrap().parse().unwrap();
 
-        let surface_area = 
-            2 * ((length * width) + (length * height) + (height * width));
+        let surface_area = 2 * ((length * width) + (length * height) + (height * width));
 
         let smallest_perimeter = smallest_perimeter(length, width, height);
 
@@ -33,7 +32,7 @@ impl RectangleBox {
             surface_area,
             smallest_area,
             smallest_perimeter,
-            volume
+            volume,
         }
     }
 
@@ -73,11 +72,11 @@ fn smallest_area(length: u32, width: u32, height: u32) -> u32 {
 }
 
 fn smallest_perimeter(length: u32, width: u32, height: u32) -> u32 {
-    let lw = 2*(length + width);
-    let lh = 2*(length + height);
-    let wh = 2*(width + height);
+    let lw = 2 * (length + width);
+    let lh = 2 * (length + height);
+    let wh = 2 * (width + height);
 
-    let mut sides = vec![lw, lh,wh];
+    let mut sides = vec![lw, lh, wh];
     sides.sort();
     sides[0]
 }
@@ -100,16 +99,15 @@ fn get_total_ribbon(boxes: &[RectangleBox]) -> u32 {
     ribbon
 }
 
-pub fn run(contents: String) -> Result<(),Box<dyn Error>> {
+pub fn run(contents: String) -> Result<(), Box<dyn Error>> {
+    let mut boxes: Vec<RectangleBox> = Vec::new();
 
-    let mut boxes : Vec<RectangleBox> = Vec::new();
-    
     for line in contents.lines() {
-        boxes.push(RectangleBox::new(line.split("x")));
+        boxes.push(RectangleBox::new(line.split('x')));
     }
 
     let total_paper_needed = get_total_wrapping_paper(&boxes);
-    println!("Total paper needed: {} sq. ft",total_paper_needed);
+    println!("Total paper needed: {} sq. ft", total_paper_needed);
 
     let total_ribbon_needed = get_total_ribbon(&boxes);
     println!("Total ribbon needed: {} ft", total_ribbon_needed);
