@@ -1,4 +1,3 @@
-use day_02::run;
 use std::fs;
 use std::process;
 
