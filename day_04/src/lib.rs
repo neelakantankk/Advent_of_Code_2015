@@ -15,7 +15,7 @@ fn get_smallest_number(secret: &str) -> u32 {
     loop {
         let message = format!("{}{}", secret, counter);
         let digest = md5::compute(message);
-        if digest[0] == 0 && digest[1] == 0 && digest[2] < 16 {
+        if digest[0] == 0 && digest[1] == 0 && digest[2] == 0 {
             return counter;
         }
         counter += 1;
