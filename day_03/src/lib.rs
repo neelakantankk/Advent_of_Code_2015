@@ -50,13 +50,12 @@ fn parse_instructions_p2(contents: &str) -> HashSet<(i32,i32)> {
 }
 
 fn get_new_pos(current_pos: (i32,i32),c:char) -> (i32,i32) {
-    let new_pos = match c {
+     match c {
         '^' => (current_pos.0,current_pos.1+1),
         'v' => (current_pos.0, current_pos.1-1),
         '>' => (current_pos.0+1, current_pos.1),
         _ => (current_pos.0-1,current_pos.1),
-    };
-    new_pos
+    }
 }
 
 
