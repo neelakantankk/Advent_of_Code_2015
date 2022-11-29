@@ -1,7 +1,7 @@
 use std::error::Error;
 
 pub fn run(contents: String) -> Result<(),Box<dyn Error>> {
-    let mut count = 1;
+    let mut count = 0;
     for line in contents.lines() {
         if is_nice(line) {
             count += 1;
