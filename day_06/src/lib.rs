@@ -1,11 +1,12 @@
 extern crate regex;
 
 use regex::Regex;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
+use std::env;
 use std::error::Error;
 
 #[derive(Hash, Eq, PartialEq, Debug)]
-struct Point {
+pub struct Point {
     pub x: u32,
     pub y: u32,
 }
@@ -23,16 +24,58 @@ impl Point {
 }
 
 pub fn run(contents: String) -> Result<(), Box<dyn Error>> {
-    let mut lights_on: HashSet<Point> = HashSet::new();
-    for line in contents.lines() {
-        lights_on = parse_line(line, lights_on);
-    }
-    println!("There are {} lights on", lights_on.len());
+    let pnum = env::var("PART");
+    match pnum {
+        Ok(val) => {
+            if val == "1" {
+                let mut lights_on: HashSet<Point> = HashSet::new();
+                for line in contents.lines() {
+                    lights_on = part_one(line, lights_on);
+                }
+                println!("There are {} lights on", lights_on.len());
+            } else if val == "2" {
+                let mut lights_on: HashMap<Point, u32> = HashMap::with_capacity(1000 * 1000);
+                for line in contents.lines() {
+                    lights_on = part_two(line, lights_on);
+                }
+                println!("The brightness is {}", lights_on.values().sum::<u32>());
+            }
+        }
+        Err(_) => {
+            panic!("Must Specify PART=1 or PART=2");
+        }
+    };
+
     Ok(())
 }
 
-fn parse_line(line: &str, lights_on: HashSet<Point>) -> HashSet<Point> {
+fn part_one(line: &str, lights_on: HashSet<Point>) -> HashSet<Point> {
     let mut lights_on = lights_on;
+    let (instruction, upper_left, lower_right) = parse_line(line);
+    if instruction == "toggle" {
+        part_one::toggle(upper_left, lower_right, &mut lights_on);
+    } else if instruction == "turn on" {
+        part_one::turn_on(upper_left, lower_right, &mut lights_on);
+    } else if instruction == "turn off" {
+        part_one::turn_off(upper_left, lower_right, &mut lights_on);
+    }
+    lights_on
+}
+
+fn part_two(line: &str, lights_on: HashMap<Point, u32>) -> HashMap<Point, u32> {
+    let mut lights_on = lights_on;
+    let (instruction, upper_left, lower_right) = parse_line(line);
+    if instruction == "toggle" {
+        part_two::toggle(upper_left, lower_right, &mut lights_on);
+    } else if instruction == "turn on" {
+        part_two::turn_on(upper_left, lower_right, &mut lights_on);
+    } else if instruction == "turn off" {
+        part_two::turn_off(upper_left, lower_right, &mut lights_on);
+    }
+    lights_on
+}
+
+fn parse_line(line: &str) -> (&str, Point, Point) {
     let re = Regex::new(
         r"(?P<instruction>toggle|turn on|turn off) (?P<up_l>\d+,\d+) through (?P<low_r>\d+,\d+)",
     )
@@ -55,37 +98,65 @@ fn parse_line(line: &str, lights_on: HashSet<Point>) -> HashSet<Point> {
             .map(|d| d.parse::<u32>().unwrap())
             .collect::<Vec<u32>>(),
     );
-    if instruction == "toggle" {
-        toggle(upper_left, lower_right, &mut lights_on);
-    } else if instruction == "turn on" {
-        turn_on(upper_left, lower_right, &mut lights_on);
-    } else if instruction == "turn off" {
-        turn_off(upper_left, lower_right, &mut lights_on);
-    }
-    lights_on
+    (instruction, upper_left, lower_right)
 }
 
-fn turn_on(upper_left: Point, lower_right: Point, lights_on: &mut HashSet<Point>) {
-    let points = generate_points(upper_left, lower_right);
-    for point in points {
-        lights_on.insert(point);
-    }
-}
+mod part_one {
+    use super::*;
 
-fn turn_off(upper_left: Point, lower_right: Point, lights_on: &mut HashSet<Point>) {
-    let points = generate_points(upper_left, lower_right);
-    for point in points {
-        lights_on.remove(&point);
-    }
-}
-
-fn toggle(upper_left: Point, lower_right: Point, lights_on: &mut HashSet<Point>) {
-    let points = generate_points(upper_left, lower_right);
-    for point in points {
-        if lights_on.contains(&point) {
-            lights_on.remove(&point);
-        } else {
+    pub fn turn_on(upper_left: Point, lower_right: Point, lights_on: &mut HashSet<Point>) {
+        let points = generate_points(upper_left, lower_right);
+        for point in points {
             lights_on.insert(point);
+        }
+    }
+
+    pub fn turn_off(upper_left: Point, lower_right: Point, lights_on: &mut HashSet<Point>) {
+        let points = generate_points(upper_left, lower_right);
+        for point in points {
+            lights_on.remove(&point);
+        }
+    }
+
+    pub fn toggle(upper_left: Point, lower_right: Point, lights_on: &mut HashSet<Point>) {
+        let points = generate_points(upper_left, lower_right);
+        for point in points {
+            if lights_on.contains(&point) {
+                lights_on.remove(&point);
+            } else {
+                lights_on.insert(point);
+            }
+        }
+    }
+}
+mod part_two {
+    use super::*;
+
+    pub fn turn_on(upper_left: Point, lower_right: Point, lights_on: &mut HashMap<Point, u32>) {
+        let points = generate_points(upper_left, lower_right);
+        for point in points {
+            lights_on.entry(point).and_modify(|v| *v += 1).or_insert(1);
+        }
+    }
+
+    pub fn turn_off(upper_left: Point, lower_right: Point, lights_on: &mut HashMap<Point, u32>) {
+        let points = generate_points(upper_left, lower_right);
+        for point in points {
+            lights_on
+                .entry(point)
+                .and_modify(|v| {
+                    if *v > 0 {
+                        *v -= 1
+                    }
+                })
+                .or_insert(0);
+        }
+    }
+
+    pub fn toggle(upper_left: Point, lower_right: Point, lights_on: &mut HashMap<Point, u32>) {
+        let points = generate_points(upper_left, lower_right);
+        for point in points {
+            lights_on.entry(point).and_modify(|v| *v += 2).or_insert(2);
         }
     }
 }
@@ -108,7 +179,14 @@ mod tests {
     fn test_turn_on() {
         let line = "turn on 0,0 through 999,999";
         let mut lights_on: HashSet<Point> = HashSet::new();
-        lights_on = parse_line(line, lights_on);
+        lights_on = part_one(line, lights_on);
         assert_eq!(1000 * 1000, lights_on.len());
+    }
+    #[test]
+    fn test_turn_on_part_two() {
+        let line = "turn on 0,0 through 0,0";
+        let mut lights_on: HashMap<Point, u32> = HashMap::new();
+        lights_on = part_two(line, lights_on);
+        assert_eq!(1 as u32, lights_on.values().sum());
     }
 }
