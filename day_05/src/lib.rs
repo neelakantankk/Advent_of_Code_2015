@@ -42,3 +42,35 @@ fn contains_three_vowels(line: &str) -> bool {
     let count = line.matches(|c| "aeiou".contains(c)).count();
     count > 2
 }
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+
+    #[test]
+    fn test_naughty_string() {
+        assert!(contains_naughty_string("plabqy"),"plabqy is nice");
+        assert!(contains_naughty_string("acdwrt"),"acdwrt is nice");
+        assert!(contains_naughty_string("lmnopq"),"lmnopq is nice");
+        assert!(contains_naughty_string("uvwxyzap"),"uvwxyzap is nice");
+        assert!(!contains_naughty_string("acbdpxqy"),"acbdpxqy is naughty");
+    }
+
+    #[test]
+    fn test_three_vowels() {
+        assert!(contains_three_vowels("aei"));
+        assert!(contains_three_vowels("xazegov"));
+        assert!(contains_three_vowels("aeiouaeiouaeiou"));
+        assert!(!contains_three_vowels("aeb"));
+        assert!(!contains_three_vowels("plsjyt"));
+    }
+
+    #[test]
+    fn test_repeat_char() {
+        assert!(contains_repeat_char("xx"));
+        assert!(contains_repeat_char("abcdde"));
+        assert!(contains_repeat_char("aabbccdd"));
+        assert!(!contains_repeat_char("abcdef"));
+        assert!(!contains_repeat_char("abcdabcdefe"));
+    }
+}
